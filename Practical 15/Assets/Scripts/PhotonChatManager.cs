@@ -6,21 +6,24 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Analytics;
 using UnityEngine.UI;
 
 public class PhotonChatManager : MonoBehaviour, IChatClientListener
 {
     [SerializeField] GameObject joinChat;
     [SerializeField] GameObject chatPanel;
+    [SerializeField] GameObject connectingText;
+    [SerializeField] GameObject messengerPrefab;
+    [SerializeField] GameObject joinPrefab;
+    [SerializeField] GameObject leftPrefab;
+    [SerializeField] Transform contentTransform;
     [SerializeField] string userName;
     ChatClient chatClient;
     bool isConnected;
 
-
-    string privateReceiver = "";
     string currentChat;
     [SerializeField] TMP_InputField chatField;
-    [SerializeField] TextMeshProUGUI chatDisplay;
     void Update()
     {
         if(isConnected)
@@ -36,7 +39,7 @@ public class PhotonChatManager : MonoBehaviour, IChatClientListener
 
     public void SubmitPublicChatOnClick()
     {
-        if (privateReceiver == "")
+        if (chatField.text != "")
         {
             chatClient.PublishMessage("RegionChannel", currentChat);
             chatField.text = "";
@@ -51,6 +54,7 @@ public class PhotonChatManager : MonoBehaviour, IChatClientListener
 
     public void ChatConnectOnClick()
     {
+        connectingText.SetActive(true);
         isConnected = true;
         chatClient = new ChatClient(this);
         chatClient.Connect(PhotonNetwork.PhotonServerSettings.AppSettings.AppIdChat,
@@ -61,6 +65,12 @@ public class PhotonChatManager : MonoBehaviour, IChatClientListener
     public void TypeChatOnValueChange(string valueIn)
     {
         currentChat = valueIn;
+    }
+
+    public void ChatDisconnecOnClick()
+    {
+        chatClient.Unsubscribe(new string[] { "RegionChannel" });
+        chatClient.Disconnect();
     }
 
     public void DebugReturn(DebugLevel level, string message)
@@ -81,12 +91,15 @@ public class PhotonChatManager : MonoBehaviour, IChatClientListener
     public void OnConnected()
     {
         Debug.Log("Connected");
+        connectingText.SetActive(false);
         joinChat.SetActive(false);
-        chatClient.Subscribe(new string[] { "RegionChannel" });
-    }
+        chatClient.Subscribe("RegionChannel" ,0,-1, new ChannelCreationOptions() { PublishSubscribers = true});
+        chatClient.SetOnlineStatus(ChatUserStatus.Online);
+    }   
 
     public void OnDisconnected()
     {
+        print("Disconnected");
         isConnected = false;
         joinChat.SetActive(true);
         chatPanel.SetActive(false);
@@ -94,12 +107,9 @@ public class PhotonChatManager : MonoBehaviour, IChatClientListener
 
     public void OnGetMessages(string channelName, string[] senders, object[] messages)
     {
-        string msgs = "";
         for (int i = 0; i < senders.Length; i++)
         {
-            msgs = string.Format("{0}: {1}", senders[i], messages[i]);
-            chatDisplay.text += "\n" + msgs;
-            Debug.Log(msgs);
+            Messenger.Create(messengerPrefab, senders[i], messages[i].ToString(), contentTransform, userName);
         }
     }
 
@@ -120,17 +130,17 @@ public class PhotonChatManager : MonoBehaviour, IChatClientListener
 
     public void OnUnsubscribed(string[] channels)
     {
-        throw new System.NotImplementedException();
+
     }
 
     public void OnUserSubscribed(string channel, string user)
     {
-        throw new System.NotImplementedException();
+        Notification.Create(joinPrefab, user + " joined", contentTransform);
     }
 
     public void OnUserUnsubscribed(string channel, string user)
     {
-        throw new System.NotImplementedException();
+        Notification.Create(leftPrefab, user + " left", contentTransform);
     }
 
 }
