@@ -29,12 +29,14 @@ public class MenuButtonsScript : MonoBehaviour
 
     public void CreateBox()
     {
-        Instantiate(boxPrefab, spawnObject.transform.position, spawnObject.transform.rotation);
+        MeshRenderer m = Instantiate(boxPrefab, spawnObject.transform.position, spawnObject.transform.rotation).GetComponent<MeshRenderer>();
+        m.material.color = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
     }
 
     public void CreateShere()
     {
-        Instantiate(spherePrefab, spawnObject.transform.position, spawnObject.transform.rotation);
+        MeshRenderer m = Instantiate(spherePrefab, spawnObject.transform.position, spawnObject.transform.rotation).GetComponent<MeshRenderer>();
+        m.material.color = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
     }
 
     public void Quit()
