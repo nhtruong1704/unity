@@ -26,6 +26,7 @@ public class EnemyController : MonoBehaviour
 
     private void Update()
     {
+        
         if (IsPlayerInSight())
         {
             MoveToTarget(_playerTranform.position);
@@ -34,19 +35,6 @@ public class EnemyController : MonoBehaviour
         {
             Patrol();
         }
-        Vector3 direction = _playerTranform.position - transform.position;
-        float angleInDegrees = 30f; // Góc 30 độ
-        Quaternion rotationQuaternion = Quaternion.Euler(0f, Random.Range(-angleInDegrees, angleInDegrees), 0f);
-
-
-        Vector3 rotatedDirection = rotationQuaternion * direction.normalized * Random.Range(0f, _approachRange);
-
-        Vector3 randomDirection = new Vector3(Random.Range(-1f, 1f),0f, Random.Range(-1f, 1f));
-        Vector3 randomPosition = rotatedDirection + randomDirection;
-
-        Debug.DrawLine(transform.position, rotatedDirection, Color.red);
-        Debug.DrawLine(randomPosition, randomPosition + Vector3.up, Color.red, 3f);
-
     }
 
     private void Patrol()
@@ -61,32 +49,30 @@ public class EnemyController : MonoBehaviour
         {
             MoveToTarget(_walkPoint);
         }
-        else SearchPoint();
+        else
+        {
+            SearchPoint();
+        }
+        
     }
 
     private void SearchPoint()
     {
 
         Vector3 direction = _playerTranform.position - transform.position;
-
-
-        bool player = Physics.Raycast(transform.position, direction, _approachRange, _playerMask);
-        print(player);
-        if(player)
+        Collider[] player = Physics.OverlapSphere(transform.position, _approachRange, _playerMask);
+        print(player.Length);
+        if(player.Length > 0)
         {
-            //float angleInDegrees = 30f; // Góc 30 độ
-            //Quaternion rotationQuaternion = Quaternion.Euler(0f, Random.Range(-angleInDegrees, angleInDegrees), 0f);
-
-
-            //Vector3 rotatedDirection = rotationQuaternion * direction.normalized;
-            //Debug.DrawLine(transform.position, rotatedDirection, Color.red);
-
-
-            //_walkPoint = transform.position + rotatedDirection * _approachRange;
-            //Debug.DrawLine(_walkPoint, _walkPoint + Vector3.up, Color.red, 6f);
+            int ran = Random.Range(-10, 10);
+            if (ran > -5 && ran < 5) return;
+            _walkPoint = Vector3.Lerp(transform.position, transform.position + direction, Random.Range(0.4f, 1f)) + Vector3.forward * ran;
+            Debug.DrawLine(_walkPoint, _walkPoint + Vector3.up, Color.red, 2f);
+            Debug.DrawLine(transform.position, direction + transform.position, Color.red);
         }
         else
         {
+            print("cc2");
             float randomOffsetX = Random.Range(-_walkRange, _walkRange);
             float randomOffsetZ = Random.Range(-_walkRange, _walkRange);
 
@@ -129,11 +115,6 @@ public class EnemyController : MonoBehaviour
         bool obstacle = Physics.Raycast(transform.position, direction, direction.magnitude,
             ~_playerMask);
         Debug.DrawRay(transform.position, direction,Color.green);
-        if (!(!player | obstacle))
-        {
-            print("player: " + player);
-            print("obstacle: " + obstacle);
-        }
         return !(!player | obstacle);
     }
 }
