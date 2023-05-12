@@ -12,12 +12,13 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private LayerMask _playerMask;
     [SerializeField] private float _sightRange;
     [SerializeField] private float _walkRange;
+    //dop
     [SerializeField] private float _approachRange;
 
     private NavMeshAgent _navMeshAgent;
 
     private Vector3 _walkPoint;
-    [SerializeField] private bool _walkPointSet;
+     private bool _walkPointSet;
 
     private void Awake()
     {
@@ -60,8 +61,8 @@ public class EnemyController : MonoBehaviour
     {
 
         Vector3 direction = _playerTranform.position - transform.position;
+
         Collider[] player = Physics.OverlapSphere(transform.position, _approachRange, _playerMask);
-        print(player.Length);
         if(player.Length > 0)
         {
             int ran = Random.Range(-10, 10);
@@ -72,7 +73,6 @@ public class EnemyController : MonoBehaviour
         }
         else
         {
-            print("cc2");
             float randomOffsetX = Random.Range(-_walkRange, _walkRange);
             float randomOffsetZ = Random.Range(-_walkRange, _walkRange);
 
